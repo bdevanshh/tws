@@ -1,13 +1,24 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { generateBox } from "@/lib/engine";
 import { charOf, engineInput, useStore } from "@/lib/store";
 import type { Rarity, SealedBox, TierId } from "@/lib/types";
 import { money } from "@/components/tier-card";
 import { cn } from "@/lib/utils";
+
+const Chest3D = dynamic(() => import("@/components/chest-3d").then((m) => m.Chest3D), {
+  ssr: false,
+  loading: () => (
+    <div className="flex h-full w-full items-center justify-center bg-surface-container-lowest">
+      <span className="font-label-sm animate-pulse text-[11px] tracking-widest text-gold-radiant uppercase">
+        Conjuring the vessel…
+      </span>
+    </div>
+  ),
+});
 
 type Stage = "locked" | "ready" | "lifting" | "reveal1" | "reveal2" | "revealed";
 
@@ -213,104 +224,20 @@ export default function UnboxPage() {
                 </div>
               </div>
 
-              {/* Chest Stage Canvas */}
-              <div className="group relative flex aspect-[4/3] max-h-[440px] w-full items-center justify-center overflow-hidden rounded-lg bg-surface-container-lowest shadow-inner">
-                <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-gold-burnished/15 via-surface-midnight/80 to-surface-container-lowest" />
-                <svg
-                  className="absolute h-72 w-72 animate-[spin_60s_linear_infinite] text-gold-burnished/10"
-                  fill="none"
-                  viewBox="0 0 100 100"
-                >
-                  <circle cx="50" cy="50" r="46" stroke="currentColor" strokeDasharray="2 3" strokeWidth="0.75" />
-                  <circle cx="50" cy="50" r="38" stroke="currentColor" strokeDasharray="8 6" strokeWidth="0.5" />
-                  <polygon fill="none" points="50,6 90,75 10,75" stroke="currentColor" strokeWidth="0.5" />
-                  <polygon fill="none" points="50,94 90,25 10,25" stroke="currentColor" strokeWidth="0.5" />
-                </svg>
-
-                <div className="relative z-10 flex w-full max-w-lg flex-col items-center justify-center transition-all duration-700 select-none">
-                  <div
-                    className={cn(
-                      "pointer-events-none absolute -inset-10 rounded-full blur-2xl transition-all duration-1000",
-                      unveiled ? "bg-gold-radiant/20" : "bg-gold-radiant/0"
-                    )}
+              {/* Interactive 3D Chest Stage (Three.js) */}
+              <div className="relative aspect-[4/3] max-h-[480px] w-full overflow-hidden rounded-lg border border-gold-burnished/30 bg-surface-container-lowest shadow-inner">
+                <div className="absolute inset-0">
+                  <Chest3D
+                    stage={stage}
+                    locks={locks}
+                    tier={tier}
+                    rarity={unveiled ? topRarity : "legendary"}
+                    prizeEmoji={char?.emoji ?? null}
+                    onPickLock={toggleLock}
+                    onOpen={breakSealAndUnveil}
                   />
-                  <div className="relative aspect-square w-full max-w-[380px] overflow-hidden rounded-xl border border-gold-burnished/50 shadow-[0_10px_40px_rgba(0,0,0,0.8)] sm:max-w-[420px]">
-                    <Image
-                      src="/stitch/chest.jpg"
-                      alt="Ancient mystical mystery chest, ornate weathered dark ebony wood with brass filigree, crimson wax seals, red silk ribbon and two heavy iron padlocks"
-                      fill
-                      sizes="(max-width: 1024px) 90vw, 420px"
-                      className={cn(
-                        "object-cover transition-all duration-700",
-                        unveiled && "scale-105 brightness-110"
-                      )}
-                    />
-                    <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface-midnight via-transparent to-surface-midnight/30" />
-                    <div className="pointer-events-none absolute inset-0 rounded-xl ring-1 ring-gold-radiant/30 ring-inset" />
-                    {/* lid ribbon */}
-                    <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 origin-top transition-transform duration-700">
-                      <div
-                        className={cn(
-                          "absolute inset-x-0 bottom-2 flex h-5 items-center justify-around overflow-hidden bg-error-container/80 shadow-md backdrop-blur-sm transition-opacity duration-500",
-                          unveiled && "opacity-0"
-                        )}
-                      >
-                        <span className="font-label-sm font-mono text-[9px] font-bold tracking-widest text-error uppercase select-none">
-                          • 𒀝 𒊕 𒁺 𒄖 𒄩 • 𒅗 𒈠 𒈾 𒉺 𒋡 •
-                        </span>
-                      </div>
-                    </div>
-                    {/* padlocks */}
-                    {([0, 1] as const).map((i) => (
-                      <button
-                        key={i}
-                        onClick={() => toggleLock(i)}
-                        aria-label={`Pick iron lock ${i + 1}`}
-                        className={cn(
-                          "absolute top-[34%] z-20 flex cursor-pointer flex-col items-center transition-all duration-300 hover:scale-110",
-                          i === 0 ? "left-[24%]" : "right-[24%]"
-                        )}
-                      >
-                        <div
-                          className={cn(
-                            "h-6 w-5 rounded-t-full border border-gold-burnished/60 bg-outline-variant transition-transform duration-300",
-                            locks[i] && "-translate-y-2"
-                          )}
-                        />
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-gold-burnished/80 bg-surface-midnight/90 shadow-[0_0_12px_rgba(212,175,55,0.4)] backdrop-blur-md">
-                          <span className="material-symbols-outlined text-base text-gold-radiant">
-                            {locks[i] ? "lock_open" : "lock"}
-                          </span>
-                        </div>
-                        <span className="font-label-sm mt-1 rounded border border-gold-burnished/40 bg-surface-container-lowest/90 px-1.5 py-0.5 text-[8px] font-semibold tracking-wider text-gold-radiant uppercase shadow">
-                          Lock {i === 0 ? "I" : "II"}
-                        </span>
-                      </button>
-                    ))}
-                    <div className="pointer-events-none absolute inset-x-4 bottom-3 flex items-center justify-between">
-                      <span className="font-label-sm rounded border border-gold-burnished/30 bg-surface-container-lowest/80 px-2 py-0.5 font-mono text-[9px] tracking-widest text-gold-radiant/70">
-                        ᚱ • ᚨ • ᛚ • ᛗ
-                      </span>
-                      <div
-                        className={cn(
-                          "h-1.5 w-1.5 rounded-full bg-gold-radiant",
-                          !unveiled && "animate-ping"
-                        )}
-                      />
-                      <span className="font-label-sm rounded border border-gold-burnished/30 bg-surface-container-lowest/80 px-2 py-0.5 font-mono text-[9px] tracking-widest text-gold-radiant/70">
-                        ᛊ • ᚦ • ᛏ • ᛟ
-                      </span>
-                    </div>
-                  </div>
                 </div>
-
-                {unveiled && (
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-60">
-                    <span className="material-symbols-outlined animate-ping text-8xl text-gold-radiant">
-                      auto_awesome
-                    </span>
-                  </div>
-                )}
+                <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-gold-radiant/20 ring-inset" />
               </div>
 
               {/* Veil Status Banner */}
