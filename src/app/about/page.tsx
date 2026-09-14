@@ -1,11 +1,14 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHero } from "@/components/page-hero";
+import { Reveal } from "@/hooks/motion";
 
 export default function AboutPage() {
   return (
-    <div className="py-10">
-      <h1 className="font-serif text-4xl tracking-tight">About The Wish Society</h1>
-      <div className="mt-7 grid gap-4 lg:grid-cols-2">
-        <Card>
+    <div className="pb-10">
+      <PageHero kicker="Our story" title="About The Wish Society" />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Reveal className="h-full">
+          <Card className="h-full">
           <CardContent className="space-y-4 p-6 text-[15px] leading-relaxed sm:p-8">
             <p>
               We are not selling a book. We are selling{" "}
@@ -23,7 +26,9 @@ export default function AboutPage() {
             </p>
           </CardContent>
         </Card>
-        <Card>
+        </Reveal>
+        <Reveal delay={120} className="h-full">
+          <Card className="h-full">
           <CardContent className="p-6 sm:p-8">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               Brand promise
@@ -36,6 +41,7 @@ export default function AboutPage() {
             </ul>
           </CardContent>
         </Card>
+        </Reveal>
       </div>
     </div>
   );

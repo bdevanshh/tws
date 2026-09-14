@@ -9,7 +9,7 @@ import { charOf, storyOf, uid, useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { RarityBadge } from "@/components/rarity-badge";
+import { RarityBadge, GOLD_BADGE_CLASS } from "@/components/rarity-badge";
 import { money } from "@/components/tier-card";
 
 const PAGE_NAMES = ["Cover", "The Soul", "Context", "The Story", "Cards", "Surprises", "Your Wish", "Farewell"];
@@ -92,7 +92,7 @@ export default function BookPage() {
         </span>
       </div>
 
-      <div className="mt-4 rounded-2xl border bg-[#f5edd9] p-7 text-[#2b2118] shadow-2xl sm:min-h-[380px] sm:p-10 dark:bg-[#efe3c6]">
+      <div key={page} className="pageTurn mt-4 rounded-2xl border bg-[#f5edd9] p-7 text-[#2b2118] shadow-2xl sm:min-h-[380px] sm:p-10 dark:bg-[#efe3c6]">
         {page === 0 && (
           <div className="py-8 text-center">
             <div className="text-6xl">{ch?.emoji ?? "📖"}</div>
@@ -100,7 +100,7 @@ export default function BookPage() {
             <p className="mt-1 text-[#6b5d43]">
               A {db.tiers[order.tier].name} Mystery · {order.id}
             </p>
-            <Badge variant="gold" className="mt-3">✦ sealed · revealed ✦</Badge>
+            <Badge variant="outline" className={`mt-3 ${GOLD_BADGE_CLASS}`}>✦ sealed · revealed ✦</Badge>
           </div>
         )}
         {page === 1 && (

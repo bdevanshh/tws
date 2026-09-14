@@ -14,6 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { RarityBadge } from "@/components/rarity-badge";
 import { money } from "@/components/tier-card";
+import { PageHero } from "@/components/page-hero";
+import { Reveal } from "@/hooks/motion";
 import { RARITY_LABEL, RARITY_ORDER } from "@/lib/types";
 
 export default function CheckoutPage() {
@@ -101,10 +103,11 @@ export default function CheckoutPage() {
   };
 
   return (
-    <div className="py-10">
-      <h1 className="font-serif text-4xl tracking-tight">Checkout — {tier.name} Box</h1>
-      <div className="mt-6 grid gap-4 lg:grid-cols-2">
-        <Card>
+    <div className="pb-10">
+      <PageHero kicker="Nearly yours" title={`Checkout — ${tier.name} Box`} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Reveal className="h-full">
+          <Card className="h-full">
           <CardContent className="space-y-4 p-6">
             <div className="rounded-xl border border-primary/40 bg-primary/5 p-4 text-sm leading-relaxed">
               <strong>No wish here — by design.</strong>{" "}
@@ -150,7 +153,9 @@ export default function CheckoutPage() {
             )}
           </CardContent>
         </Card>
-        <div className="flex flex-col gap-4">
+        </Reveal>
+        <Reveal delay={120}>
+          <div className="flex h-full flex-col gap-4">
           <Card className={tier.popular ? "border-primary/60" : ""}>
             <CardContent className="p-6">
               <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
@@ -181,7 +186,8 @@ export default function CheckoutPage() {
               Character ? · Story ? · {tier.contents.cards} cards ? · surprises ? · bonus ?
             </div>
           </div>
-        </div>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

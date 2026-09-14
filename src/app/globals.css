@@ -88,6 +88,28 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+  ::selection {
+    background: oklch(0.78 0.13 82 / 0.35);
+    color: oklch(0.98 0.01 85);
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(1 0 0 / 0.14);
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.78 0.13 82 / 0.45);
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
 }
 
 @layer utilities {
@@ -126,5 +148,134 @@
   }
   .needle-glow {
     box-shadow: 0 0 18px oklch(0.78 0.13 82 / 0.8);
+  }
+
+  /* ---- sitewide motion language ---- */
+  /* Staggered entrance for above-the-fold content: style="--rd:120ms" */
+  .rise {
+    opacity: 0;
+    animation: rise 0.8s cubic-bezier(0.22, 0.8, 0.3, 1) forwards;
+    animation-delay: var(--rd, 0ms);
+  }
+  /* Scroll-triggered reveal, toggled by <Reveal> */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+      opacity 0.7s ease,
+      transform 0.7s cubic-bezier(0.22, 0.8, 0.3, 1);
+    transition-delay: var(--rd, 0ms);
+  }
+  .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+  /* Radix tab panels */
+  .tabPanel[data-state="active"] {
+    animation: tabIn 0.32s ease both;
+  }
+  /* Book reader page turn */
+  .pageTurn {
+    animation: pageTurn 0.4s cubic-bezier(0.22, 0.8, 0.3, 1) both;
+    transform-origin: left center;
+  }
+  /* Marquee divider strip */
+  .marquee {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marqueeTrack {
+    display: flex;
+    width: max-content;
+    animation: marquee 38s linear infinite;
+  }
+  .marquee:hover .marqueeTrack {
+    animation-play-state: paused;
+  }
+  /* Ambient hero dust */
+  .dust {
+    position: absolute;
+    border-radius: 9999px;
+    background: radial-gradient(circle, oklch(0.85 0.12 85 / 0.8), transparent 70%);
+    opacity: 0;
+    pointer-events: none;
+    animation: drift var(--dd, 9s) linear infinite;
+    animation-delay: var(--dl, 0s);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes tabIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pageTurn {
+  from {
+    opacity: 0;
+    transform: perspective(1200px) rotateY(-5deg) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.7;
+  }
+  85% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-130px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .reveal,
+  .tabPanel[data-state="active"],
+  .pageTurn {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  .marqueeTrack,
+  .dust {
+    animation: none;
+  }
+  .dust {
+    display: none;
   }
 }

@@ -5,21 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RARITY_LABEL, RARITY_ORDER, type Tier } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { GOLD_BADGE_CLASS, RARITY_BADGE_CLASS } from "./rarity-badge";
 
 export function money(n: number) {
   return "$" + Number(n).toFixed(2);
 }
 
-export function TierCard({ tier, detail }: { tier: Tier; detail?: boolean }) {
+export function TierCard({ tier, detail, className }: { tier: Tier; detail?: boolean; className?: string }) {
   return (
     <Card
       className={cn(
         "relative flex flex-col transition-transform duration-200 hover:-translate-y-1",
-        tier.popular && "border-primary/60 shadow-[0_0_40px_-12px_var(--color-primary)]"
+        tier.popular && "border-primary/60 shadow-[0_0_40px_-12px_var(--color-primary)]",
+        className
       )}
     >
       {tier.popular && (
-        <Badge variant="gold" className="absolute right-4 top-4">
+        <Badge variant="outline" className={cn(GOLD_BADGE_CLASS, "absolute right-4 top-4")}>
           <Star size={11} /> Most popular
         </Badge>
       )}
@@ -36,7 +38,7 @@ export function TierCard({ tier, detail }: { tier: Tier; detail?: boolean }) {
           <>
             <div className="flex flex-wrap gap-1.5">
               {RARITY_ORDER.map((k) => (
-                <Badge key={k} variant={k}>
+                <Badge key={k} variant="outline" className={RARITY_BADGE_CLASS[k]}>
                   {RARITY_LABEL[k]} {tier.odds[k]}%
                 </Badge>
               ))}
@@ -54,7 +56,7 @@ export function TierCard({ tier, detail }: { tier: Tier; detail?: boolean }) {
             </Link>
           </Button>
           <Button variant="outline" asChild>
-            <Link href="/unbox">
+            <Link href="/unbox" aria-label="Try the free unbox demo">
               <Sparkles size={15} />
             </Link>
           </Button>

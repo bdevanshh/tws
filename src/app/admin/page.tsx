@@ -2,31 +2,26 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Lock, Plus } from "lucide-react";
+import { Inbox, Lock, PackageSearch, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { charOf, nextStatus, useStore } from "@/lib/store";
 import { RARITY_LABEL, RARITY_ORDER, type Rarity, type TierId } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
+import { PageHero } from "@/components/page-hero";
+import { useCountUp } from "@/hooks/motion";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { RarityBadge } from "@/components/rarity-badge";
+import { RarityBadge, RARITY_BADGE_CLASS } from "@/components/rarity-badge";
 import { money } from "@/components/tier-card";
 import type { WishStatus } from "@/lib/store";
 
 export default function AdminPage() {
-  const { db, user, patch, reset } = useStore();
-  const [notes, setNotes] = useState<Record<string, string>>({});
-  const [odds, setOdds] = useState<Record<string, number>>(() => {
-    const o: Record<string, number> = {};
-    (Object.keys(db.tiers) as TierId[]).forEach((t) =>
-      RARITY_ORDER.forEach((k) => (o[`${t}:${k}`] = db.tiers[t].odds[k]))
-    );
-    return o;
-  });
+  const { user } = useStore();
 
   if (!user || user.role !== "admin") {
     return (
@@ -46,8 +41,28 @@ export default function AdminPage() {
       </div>
     );
   }
+  return <VaultDashboard />;
+}
+
+function VaultDashboard() {
+  const { db, patch, reset } = useStore();
+  const [notes, setNotes] = useState<Record<string, string>>({});
+  const [odds, setOdds] = useState<Record<string, number>>(() => {
+    const o: Record<string, number> = {};
+    (Object.keys(db.tiers) as TierId[]).forEach((t) =>
+      RARITY_ORDER.forEach((k) => (o[`${t}:${k}`] = db.tiers[t].odds[k]))
+    );
+    return o;
+  });
 
   const revenue = db.orders.reduce((s, o) => s + o.price, 0);
+  const orderCount = db.orders.length;
+  const pendingCount = db.wishes.filter((w) => w.status === "pending").length;
+  const customerCount = db.users.filter((x) => x.role === "customer").length;
+  const revAnim = useCountUp(revenue);
+  const ordAnim = useCountUp(orderCount);
+  const penAnim = useCountUp(pendingCount);
+  const cusAnim = useCountUp(customerCount);
   const moderate = (id: string, status: WishStatus) => {
     patch((d) => {
       const w = d.wishes.find((x) => x.id === id);
@@ -61,15 +76,15 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="py-10">
-      <h1 className="font-serif text-4xl tracking-tight">Admin Vault 🔐</h1>
+    <div className="pb-10">
+      <PageHero kicker="Control room" title="Admin Vault 🔐" />
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
-          ["Revenue", money(revenue)],
-          ["Orders", String(db.orders.length)],
-          ["Pending wishes", String(db.wishes.filter((w) => w.status === "pending").length)],
-          ["Customers", String(db.users.filter((x) => x.role === "customer").length)],
+          ["Revenue", money(revAnim)],
+          ["Orders", String(Math.round(ordAnim))],
+          ["Pending wishes", String(Math.round(penAnim))],
+          ["Customers", String(Math.round(cusAnim))],
         ].map(([k, v]) => (
           <Card key={k}>
             <CardContent className="p-5">
@@ -122,7 +137,10 @@ export default function AdminPage() {
                           </TableCell>
                           <TableCell>{db.tiers[o.tier].name}</TableCell>
                           <TableCell>
-                            <Badge variant={o.status === "delivered" ? "legendary" : "rare"}>
+                            <Badge
+                              variant="outline"
+                              className={o.status === "delivered" ? RARITY_BADGE_CLASS.legendary : RARITY_BADGE_CLASS.rare}
+                            >
                               {o.status}
                             </Badge>
                           </TableCell>
@@ -160,7 +178,11 @@ export default function AdminPage() {
                   </TableBody>
                 </Table>
               ) : (
-                <p className="p-6 text-sm text-muted-foreground">No orders yet.</p>
+                <EmptyState
+                  icon={PackageSearch}
+                  title="No orders yet"
+                  body="New sealed orders will land here with their hidden contents revealed to you."
+                />
               )}
             </CardContent>
           </Card>
@@ -180,7 +202,14 @@ export default function AdminPage() {
                       </div>
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         <Badge
-                          variant={w.status === "approved" ? "legendary" : w.status === "declined" ? "ultrarare" : "rare"}
+                          variant="outline"
+                          className={
+                            w.status === "approved"
+                              ? RARITY_BADGE_CLASS.legendary
+                              : w.status === "declined"
+                                ? RARITY_BADGE_CLASS.ultrarare
+                                : RARITY_BADGE_CLASS.rare
+                          }
                         >
                           {w.status.toUpperCase()}
                         </Badge>
@@ -203,11 +232,11 @@ export default function AdminPage() {
               })}
             </div>
           ) : (
-            <Card>
-              <CardContent className="p-6 text-sm text-muted-foreground">
-                No wishes submitted. Wishes arrive after customers unbox &amp; write them.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Inbox}
+              title="Wish queue is clear"
+              body="Wishes arrive after customers unbox and write them. Good ones earn a place in the Hall."
+            />
           )}
         </TabsContent>
 

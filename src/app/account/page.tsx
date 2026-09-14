@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowRight, BookOpen, Lock } from "lucide-react";
+import { ArrowRight, BookOpen, LayoutGrid, Lock, PackageSearch, Send } from "lucide-react";
 import { toast } from "sonner";
 import { charOf, nextStatus, useStore } from "@/lib/store";
 import type { OrderStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
+import { PageHero } from "@/components/page-hero";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { RarityBadge } from "@/components/rarity-badge";
+import { RarityBadge, RARITY_BADGE_CLASS } from "@/components/rarity-badge";
 import { money } from "@/components/tier-card";
 
 const FLOW: { id: OrderStatus; label: string }[] = [
@@ -66,13 +68,8 @@ export default function AccountPage() {
   };
 
   return (
-    <div className="py-10">
-      <h1 className="font-serif text-4xl tracking-tight">
-        My Account{" "}
-        <span className="align-middle font-sans text-sm font-normal text-muted-foreground">
-          · {user.name}
-        </span>
-      </h1>
+    <div className="pb-10">
+      <PageHero kicker="Your vault" title="My Account" sub={`Signed in as ${user.name}`} />
 
       <Tabs defaultValue="orders" className="mt-6">
         <TabsList>
@@ -97,7 +94,10 @@ export default function AccountPage() {
                         <strong>
                           {o.id} · {t.name} Box · {money(o.price)}
                         </strong>
-                        <Badge variant={o.status === "delivered" ? "legendary" : "rare"}>
+                        <Badge
+                          variant="outline"
+                          className={o.status === "delivered" ? RARITY_BADGE_CLASS.legendary : RARITY_BADGE_CLASS.rare}
+                        >
                           {o.status.toUpperCase()}
                         </Badge>
                       </div>
@@ -153,14 +153,16 @@ export default function AccountPage() {
               })}
             </div>
           ) : (
-            <Card>
-              <CardContent className="flex items-center gap-3 p-6">
-                No orders yet.
+            <EmptyState
+              icon={PackageSearch}
+              title="No orders yet"
+              body="Your sealed boxes will appear here with live tracking, from payment to doorstep."
+              action={
                 <Button size="sm" asChild>
                   <Link href="/boxes">Choose a box →</Link>
                 </Button>
-              </CardContent>
-            </Card>
+              }
+            />
           )}
         </TabsContent>
 
@@ -186,12 +188,11 @@ export default function AccountPage() {
               })}
             </div>
           ) : (
-            <Card>
-              <CardContent className="p-6 text-sm text-muted-foreground">
-                Your bookshelf unlocks on <strong className="text-foreground">delivery</strong>.
-                Sealed orders can&apos;t be peeked.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={BookOpen}
+              title="Shelf's empty — for now"
+              body={<>Your bookshelf unlocks on <strong className="text-foreground">delivery</strong>. Sealed orders can&apos;t be peeked.</>}
+            />
           )}
         </TabsContent>
 
@@ -217,11 +218,11 @@ export default function AccountPage() {
               ))}
             </div>
           ) : (
-            <Card>
-              <CardContent className="p-6 text-sm text-muted-foreground">
-                No collectibles yet — they reveal at unboxing.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={LayoutGrid}
+              title="No collectibles yet"
+              body="Cards, art and limited editions reveal at unboxing — then live here in your binder."
+            />
           )}
         </TabsContent>
 
@@ -234,8 +235,13 @@ export default function AccountPage() {
                     <div className="font-serif text-lg">“{w.text}”</div>
                     <div className="mt-2.5 flex flex-wrap items-center gap-2">
                       <Badge
-                        variant={
-                          w.status === "approved" ? "legendary" : w.status === "declined" ? "ultrarare" : "rare"
+                        variant="outline"
+                        className={
+                          w.status === "approved"
+                            ? RARITY_BADGE_CLASS.legendary
+                            : w.status === "declined"
+                              ? RARITY_BADGE_CLASS.ultrarare
+                              : RARITY_BADGE_CLASS.rare
                         }
                       >
                         {w.status.toUpperCase()}
@@ -250,11 +256,11 @@ export default function AccountPage() {
               ))}
             </div>
           ) : (
-            <Card>
-              <CardContent className="p-6 text-sm text-muted-foreground">
-                No wishes sent. Open a delivered book → write your wish → send it to us.
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={Send}
+              title="No wishes sent"
+              body="Open a delivered book, write your wish on the YOUR WISH page, and send it to us. Good ones are accepted."
+            />
           )}
         </TabsContent>
 

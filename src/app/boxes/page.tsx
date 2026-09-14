@@ -4,21 +4,26 @@ import { ShieldCheck } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Card, CardContent } from "@/components/ui/card";
 import { TierCard } from "@/components/tier-card";
+import { PageHero } from "@/components/page-hero";
+import { Reveal } from "@/hooks/motion";
 
 export default function BoxesPage() {
   const { db } = useStore();
   return (
-    <div className="py-10">
-      <h1 className="font-serif text-4xl tracking-tight">Mystery Boxes</h1>
-      <p className="mt-2 max-w-2xl text-muted-foreground">
-        You select <strong className="text-foreground">only the tier</strong>. Characters,
-        stories, cards, products and collectibles are sealed by the Mystery Engine.
-      </p>
-      <div className="mt-7 grid gap-4 md:grid-cols-3">
-        {Object.values(db.tiers).map((t) => (
-          <TierCard key={t.id} tier={t} detail />
+    <div className="pb-10">
+      <PageHero
+        kicker="The vault"
+        title="Mystery Boxes"
+        sub={<>You select <strong className="text-foreground">only the tier</strong>. Characters, stories, cards, products and collectibles are sealed by the Mystery Engine.</>}
+      />
+      <div className="grid gap-4 md:grid-cols-3">
+        {Object.values(db.tiers).map((t, i) => (
+          <Reveal key={t.id} delay={i * 90} className="h-full">
+            <TierCard tier={t} detail className="h-full" />
+          </Reveal>
         ))}
       </div>
+      <Reveal delay={120}>
       <Card className="mt-6">
         <CardContent className="flex gap-3 p-6 text-sm leading-relaxed text-muted-foreground">
           <ShieldCheck size={18} className="mt-0.5 shrink-0 text-primary" />
@@ -30,6 +35,7 @@ export default function BoxesPage() {
           </span>
         </CardContent>
       </Card>
+      </Reveal>
     </div>
   );
 }

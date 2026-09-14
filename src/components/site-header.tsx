@@ -12,7 +12,6 @@ const LINKS = [
   { href: "/", label: "Home" },
   { href: "/boxes", label: "Mystery Boxes" },
   { href: "/unbox", label: "Unbox Demo" },
-  { href: "/how", label: "How It Works" },
   { href: "/about", label: "About" },
   { href: "/account", label: "My Account" },
   { href: "/admin", label: "Admin" },
@@ -30,7 +29,7 @@ export function SiteHeader() {
           <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-gold-soft to-primary shadow-[0_0_24px_-4px_var(--color-primary)]">
             <Eye className="h-4.5 w-4.5 text-primary-foreground" size={18} />
           </span>
-          <span className="hidden xs:inline text-[15px] sm:inline">
+          <span className="text-[15px]">
             THE WISH <span className="gold-text">SOCIETY</span>
           </span>
         </Link>
@@ -55,7 +54,7 @@ export function SiteHeader() {
           </span>
         )}
         <Button size="sm" variant="outline" asChild>
-          <Link href="/unbox">
+          <Link href="/unbox" aria-label="Try the free unbox demo">
             <Gift size={15} /> <span className="hidden sm:inline">Free Demo</span>
           </Link>
         </Button>

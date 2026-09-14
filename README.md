@@ -27,7 +27,7 @@ npm run build    # production check (tsc + eslint clean)
 |---|---|
 | `/` | Hero, tiers, how-it-works strip, universe + live drops |
 | `/boxes` | Regular / Medium / Premium with odds + fairness note |
-| `/unbox` | Free Hypedrop-style spinner (outcome sealed before the strip moves) |
+| `/unbox` | Free 3D ritual demo: pick 2 padlocks → swipe the lid → slow reward reveal |
 | `/how`, `/about` | Journey + brand story |
 | `/auth` | Login / register (shadcn Tabs) |
 | `/checkout/[tier]` | Mock payment. **Never asks for a wish** — by design |

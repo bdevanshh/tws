@@ -9,6 +9,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageHero } from "@/components/page-hero";
+import { Reveal } from "@/hooks/motion";
 
 export default function AuthPage() {
   const { db, patch } = useStore();
@@ -52,9 +54,10 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl py-10">
-      <h1 className="font-serif text-4xl tracking-tight">Welcome, Seeker</h1>
-      <div className="mt-6 grid gap-4 md:grid-cols-[1.2fr_1fr]">
+    <div className="mx-auto max-w-4xl pb-10">
+      <PageHero kicker="Membership" title="Welcome, Seeker" />
+      <Reveal>
+      <div className="grid gap-4 md:grid-cols-[1.2fr_1fr]">
         <Card>
           <CardContent className="p-6">
             <Tabs defaultValue="login">
@@ -108,6 +111,7 @@ export default function AuthPage() {
           </CardContent>
         </Card>
       </div>
+      </Reveal>
     </div>
   );
 }

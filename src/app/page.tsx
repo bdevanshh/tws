@@ -1,47 +1,82 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, BookOpen, Gift, PackageSearch, PenLine, Sparkles } from "lucide-react";
+import type { CSSProperties } from "react";
+import { ArrowRight, Gift, Sparkles } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { RarityBadge } from "@/components/rarity-badge";
+import { GodsSection } from "@/components/gods-section";
+import { RARITY_BADGE_CLASS, GOLD_BADGE_CLASS, RarityBadge } from "@/components/rarity-badge";
 import { TierCard } from "@/components/tier-card";
 import { RARITY_ORDER } from "@/lib/types";
+import { Reveal } from "@/hooks/motion";
 
-const STEPS = [
-  { icon: PackageSearch, title: "1 · Choose", body: "Pick Regular, Medium or Premium. Nothing else — no character, no story, no card." },
-  { icon: Gift, title: "2 · We seal it", body: "The Mystery Engine rolls rarity + inventory and seals a unique combination." },
-  { icon: BookOpen, title: "3 · Unbox", body: "Open the physical box. Meet your character, story, cards & surprises." },
-  { icon: PenLine, title: "4 · Wish", body: "Write your wish on the YOUR WISH card and send it to us. Good ones are accepted." },
-];
+/** Deterministic ambient dust — identical on server and client. */
+const DUST = Array.from({ length: 12 }, (_, i) => ({
+  left: `${(i * 37 + 11) % 100}%`,
+  bottom: `${(i * 23) % 40}%`,
+  size: 3 + (i % 3),
+  duration: `${7 + (i % 5)}s`,
+  delay: `${(i * 0.9) % 7}s`,
+}));
 
 export default function HomePage() {
   const { db } = useStore();
   const tiers = Object.values(db.tiers);
+  const traditions = [...new Set(db.characters.map((c) => c.tradition))].sort();
 
   return (
     <div className="pb-10">
       {/* hero */}
-      <section className="mx-auto max-w-3xl py-16 text-center sm:py-20">
-        <Badge variant="gold" className="mb-5">
-          <Sparkles size={11} /> Global mystery-box & collectible experience
-        </Badge>
+      <section className="relative mx-auto max-w-3xl overflow-visible py-16 text-center sm:py-20">
+        {DUST.map((d, i) => (
+          <span
+            key={i}
+            aria-hidden
+            className="dust"
+            style={
+              {
+                left: d.left,
+                bottom: d.bottom,
+                width: d.size,
+                height: d.size,
+                "--dd": d.duration,
+                "--dl": d.delay,
+              } as CSSProperties
+            }
+          />
+        ))}
+        <div className="rise" style={{ "--rd": "0ms" } as CSSProperties}>
+          <Badge variant="outline" className={`mb-5 ${GOLD_BADGE_CLASS}`}>
+            <Sparkles size={11} /> Global mystery-box & collectible experience
+          </Badge>
+        </div>
         <h1 className="font-serif text-5xl leading-[1.05] tracking-tight sm:text-6xl">
-          You Choose the Box.
-          <br />
-          <span className="gold-text">We Create the Mystery.</span>
-          <br />
-          You Discover the Story.
+          <span className="rise block" style={{ "--rd": "80ms" } as CSSProperties}>
+            You Choose the Box.
+          </span>
+          <span className="rise block" style={{ "--rd": "200ms" } as CSSProperties}>
+            <span className="gold-text">We Create the Mystery.</span>
+          </span>
+          <span className="rise block" style={{ "--rd": "320ms" } as CSSProperties}>
+            You Discover the Story.
+          </span>
         </h1>
-        <p className="mx-auto mt-5 max-w-xl leading-relaxed text-muted-foreground">
+        <p
+          className="rise mx-auto mt-5 max-w-xl leading-relaxed text-muted-foreground"
+          style={{ "--rd": "430ms" } as CSSProperties}
+        >
           One tier. Zero spoilers. Inside: a sealed <strong className="text-foreground">Mystery Book</strong>,
           character cards, art, collectibles — and a blank{" "}
           <strong className="text-foreground">YOUR WISH</strong> card you fill in{" "}
           <em>after</em> unboxing, then send to us. Good wishes are accepted.
         </p>
-        <div className="mt-7 flex flex-wrap justify-center gap-3">
+        <div
+          className="rise mt-7 flex flex-wrap justify-center gap-3"
+          style={{ "--rd": "530ms" } as CSSProperties}
+        >
           <Button size="lg" asChild>
             <Link href="/boxes">
               Choose your box <ArrowRight size={16} />
@@ -53,48 +88,47 @@ export default function HomePage() {
             </Link>
           </Button>
         </div>
-        <div className="mt-6 flex flex-wrap justify-center gap-1.5">
+        <div
+          className="rise mt-6 flex flex-wrap justify-center gap-1.5"
+          style={{ "--rd": "630ms" } as CSSProperties}
+        >
           {RARITY_ORDER.map((r) => (
             <RarityBadge key={r} rarity={r} />
           ))}
         </div>
       </section>
 
+      {/* traditions marquee */}
+      <div className="marquee rise border-y py-3.5" style={{ "--rd": "700ms" } as CSSProperties}>
+        <div className="marqueeTrack text-[13px] uppercase tracking-[0.22em] text-muted-foreground">
+          {[0, 1].map((half) => (
+            <div key={half} className="flex shrink-0 items-center" aria-hidden={half === 1}>
+              {traditions.map((t) => (
+                <span key={t} className="mx-6 flex items-center gap-6 whitespace-nowrap">
+                  <span className="text-primary">✦</span> {t}
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* tiers */}
-      <section className="grid gap-4 md:grid-cols-3">
-        {tiers.map((t) => (
-          <TierCard key={t.id} tier={t} />
+      <section className="mt-8 grid gap-4 md:grid-cols-3">
+        {tiers.map((t, i) => (
+          <Reveal key={t.id} delay={i * 90} className="h-full">
+            <TierCard tier={t} className="h-full" />
+          </Reveal>
         ))}
       </section>
 
-      {/* how strip */}
-      <Card className="mt-6">
-        <CardContent className="p-6 sm:p-8">
-          <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
-            How it works
-          </div>
-          <div className="mt-4 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s) => (
-              <div key={s.title} className="flex flex-col gap-2">
-                <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary/10 text-primary">
-                  <s.icon size={17} />
-                </span>
-                <div className="font-semibold">{s.title}</div>
-                <p className="text-[13px] leading-relaxed text-muted-foreground">{s.body}</p>
-              </div>
-            ))}
-          </div>
-          <Button variant="outline" size="sm" className="mt-6" asChild>
-            <Link href="/how">
-              Full journey <ArrowRight size={14} />
-            </Link>
-          </Button>
-        </CardContent>
-      </Card>
+      {/* gods + legends */}
+      <GodsSection />
 
       {/* universe + live */}
       <section className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
+        <Reveal className="h-full">
+          <Card className="h-full">
           <CardContent className="p-6 sm:p-8">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               The universe
@@ -110,7 +144,7 @@ export default function HomePage() {
             </p>
             <div className="mt-4 flex flex-wrap gap-1.5">
               {db.characters.slice(0, 8).map((c) => (
-                <Badge key={c.id} variant={c.rarity} title={c.tradition}>
+                <Badge key={c.id} variant="outline" className={RARITY_BADGE_CLASS[c.rarity]} title={c.tradition}>
                   {c.emoji} {c.name}
                 </Badge>
               ))}
@@ -120,7 +154,9 @@ export default function HomePage() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        </Reveal>
+        <Reveal delay={120} className="h-full">
+          <Card className="h-full">
           <CardContent className="p-6 sm:p-8">
             <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
               Live drops · just now
@@ -146,6 +182,7 @@ export default function HomePage() {
             </div>
           </CardContent>
         </Card>
+        </Reveal>
       </section>
     </div>
   );
