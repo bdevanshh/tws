@@ -214,7 +214,7 @@ export default function BookPage() {
         <div className="flex-1" />
         <div className="hidden flex-wrap justify-center gap-1.5 md:flex">
           {PAGE_NAMES.map((n, i) => (
-            <Button key={n} size="sm" variant={i === page ? "secondary" : "ghost"} onClick={() => setPage(i)}>
+            <Button key={n} size="sm" variant={i === page ? "default" : "ghost"} onClick={() => setPage(i)}>
               {n}
             </Button>
           ))}

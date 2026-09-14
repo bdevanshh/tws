@@ -13,7 +13,7 @@ export const RARITY_BADGE_CLASS: Record<Rarity, string> = {
 };
 
 export const GOLD_BADGE_CLASS =
-  "border-primary/50 text-primary bg-primary/10";
+  "border-gold-burnished/50 text-gold-radiant bg-gold-burnished/10";
 
 export function RarityBadge({ rarity, className }: { rarity: Rarity; className?: string }) {
   return (

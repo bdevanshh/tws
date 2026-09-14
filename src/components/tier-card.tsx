@@ -1,9 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { RARITY_LABEL, RARITY_ORDER, type Tier } from "@/lib/types";
+import { RARITY_LABEL, RARITY_ORDER, type Tier, type TierId } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { GOLD_BADGE_CLASS, RARITY_BADGE_CLASS } from "./rarity-badge";
 
@@ -11,25 +12,64 @@ export function money(n: number) {
   return "$" + Number(n).toFixed(2);
 }
 
+const TIER_IMAGES: Record<TierId, { src: string; alt: string }> = {
+  regular:
+    {
+      src: "/stitch/regular-box.jpg",
+      alt: "Small carved wooden mystery chest with brass filigree and runic seal",
+    },
+  medium:
+    {
+      src: "/stitch/medium-box.jpg",
+      alt: "Carved dark oak chest with brass hinges and glowing sigil",
+    },
+  premium:
+    {
+      src: "/stitch/premium-box.jpg",
+      alt: "Velvet-lined obsidian tome box with gold and violet gemstones",
+    },
+};
+
 export function TierCard({ tier, detail, className }: { tier: Tier; detail?: boolean; className?: string }) {
+  const art = TIER_IMAGES[tier.id];
   return (
     <Card
       className={cn(
-        "relative flex flex-col transition-transform duration-200 hover:-translate-y-1",
-        tier.popular && "border-primary/60 shadow-[0_0_40px_-12px_var(--color-primary)]",
+        "reliquary runic-hover relative flex flex-col overflow-hidden",
+        tier.popular &&
+          "reliquary-raised border-gold-radiant shadow-[0_0_36px_rgba(212,175,55,0.25)]",
         className
       )}
     >
       {tier.popular && (
-        <Badge variant="outline" className={cn(GOLD_BADGE_CLASS, "absolute right-4 top-4")}>
-          <Star size={11} /> Most popular
+        <Badge
+          variant="outline"
+          className={cn(
+            GOLD_BADGE_CLASS,
+            "absolute top-4 left-1/2 z-10 -translate-x-1/2 border-gold-radiant bg-primary-container text-[10px] text-background shadow-[0_0_12px_rgba(245,215,127,0.7)]"
+          )}
+        >
+          <Star size={11} /> Most popular vessel
         </Badge>
       )}
+      <div className="relative h-44 w-full overflow-hidden border-b border-gold-burnished/20">
+        <Image
+          src={art.src}
+          alt={art.alt}
+          fill
+          sizes="(max-width: 768px) 100vw, 33vw"
+          className="object-cover opacity-85 transition-transform duration-500 hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-surface-midnight via-transparent to-transparent" />
+        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 font-headline-sm text-gold-radiant drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+          {tier.name} Box
+        </span>
+      </div>
       <CardContent className="flex flex-1 flex-col gap-3 p-6">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+        <div className="font-label-sm text-[11px] font-semibold uppercase tracking-[0.18em] text-gold-burnished">
           {tier.tag}
         </div>
-        <h3 className="font-serif text-2xl">{tier.name} Box</h3>
+        <h3 className="font-headline-sm text-2xl text-parchment-text">{tier.name} Box</h3>
         <div className="text-4xl font-extrabold tracking-tight" style={{ color: tier.color }}>
           {money(tier.price)}
         </div>

@@ -4,21 +4,21 @@ const seed = (() => {
   const TIERS = {
     regular: {
       id: "regular", name: "Regular", price: 19.99, tag: "Begin the mystery",
-      color: "#7dd3fc",
+      color: "#94a3b8",
       desc: "1 Mystery Book, 2 character/story cards, bookmark, small surprise product, mystery bonus.",
       contents: { books: 1, cards: 2, bookmarks: 1, surprises: 1, bonusChance: 0.15, collectibleChance: 0.10 },
       odds: { common: 65, rare: 25, epic: 7, legendary: 2.5, ultrarare: 0.5 }
     },
     medium: {
       id: "medium", name: "Medium", price: 39.99, tag: "Most popular", popular: true,
-      color: "#c084fc",
+      color: "#f5d77f",
       desc: "1 Mystery Book, 4 cards, 1 character collectible, art print, bookmark, mini story, surprise product, bonus.",
       contents: { books: 1, cards: 4, bookmarks: 1, artprints: 1, surprises: 1, collectibles: 1, bonusChance: 0.35, collectibleChance: 0.35 },
       odds: { common: 40, rare: 35, epic: 18, legendary: 6, ultrarare: 1 }
     },
     premium: {
       id: "premium", name: "Premium", price: 79.99, tag: "Ultimate ritual",
-      color: "#fbbf24",
+      color: "#a855f7",
       desc: "Premium Mystery Book, 6 cards, 2 collectibles, premium art, exclusive product, limited-edition chance, premium packaging, bonus.",
       contents: { books: 1, cards: 6, bookmarks: 1, artprints: 2, surprises: 2, collectibles: 2, bonusChance: 0.6, collectibleChance: 0.7 },
       odds: { common: 20, rare: 35, epic: 28, legendary: 13, ultrarare: 4 }
@@ -26,11 +26,11 @@ const seed = (() => {
   };
 
   const RARITY = {
-    common:    { label: "Common",    color: "#9ca3af", glow: "rgba(156,163,175,.35)", weight: 1 },
-    rare:      { label: "Rare",      color: "#60a5fa", glow: "rgba(96,165,250,.4)",  weight: 2 },
-    epic:      { label: "Epic",      color: "#c084fc", glow: "rgba(192,132,252,.45)", weight: 3 },
-    legendary: { label: "Legendary", color: "#fbbf24", glow: "rgba(251,191,36,.5)",  weight: 4 },
-    ultrarare: { label: "Ultra Rare",color: "#fb7185", glow: "rgba(251,113,133,.55)", weight: 5 }
+    common:    { label: "Common",    color: "#94a3b8", glow: "rgba(148,163,184,.35)", weight: 1 },
+    rare:      { label: "Rare",      color: "#38bdf8", glow: "rgba(56,189,248,.4)",  weight: 2 },
+    epic:      { label: "Epic",      color: "#a855f7", glow: "rgba(168,85,247,.45)", weight: 3 },
+    legendary: { label: "Legendary", color: "#f59e0b", glow: "rgba(245,158,11,.5)",  weight: 4 },
+    ultrarare: { label: "Ultra Rare",color: "#ec4899", glow: "rgba(236,72,153,.55)", weight: 5 }
   };
 
   // category: deity | sacred | mythological | cultural | historical  (PRD §4 respectful distinction)
