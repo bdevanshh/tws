@@ -16,6 +16,10 @@ export const metadata: Metadata = {
   title: "The Wish Society — You Choose the Box. We Create the Mystery.",
   description:
     "A global mystery-box & collectible experience built on world religions, mythology and cultural stories.",
+  icons: {
+    icon: "/logo.jpeg",
+    apple: "/logo.jpeg",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

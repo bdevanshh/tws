@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export function SiteFooter() {
   return (
@@ -7,8 +8,14 @@ export function SiteFooter() {
         <div className="h-2 w-2 rotate-45 border border-gold-burnished/80 bg-surface-container-lowest" />
       </div>
       <div className="mx-auto flex max-w-[1280px] flex-col items-center gap-space-lg px-gutter py-space-xl text-center">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full border border-gold-burnished/40 bg-surface-vault shadow-[0_0_16px_rgba(212,175,55,0.2)]">
-          <span className="material-symbols-outlined text-[24px] text-gold-radiant">token</span>
+        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-gold-burnished/40 bg-surface-vault shadow-[0_0_16px_rgba(212,175,55,0.2)]">
+          <Image
+            src="/logo.jpeg"
+            alt="The Wish Society logo"
+            width={48}
+            height={48}
+            className="h-full w-full object-cover"
+          />
         </div>
         <div className="flex max-w-xl flex-col gap-space-xs">
           <p className="font-headline-sm text-headline-sm font-normal tracking-wide text-parchment-text italic">

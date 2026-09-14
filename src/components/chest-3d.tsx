@@ -159,8 +159,11 @@ function ChestScene({
   const ring = useRef<THREE.Mesh>(null);
   const glowPlane = useRef<THREE.Mesh>(null);
   const beam = useRef<THREE.Mesh>(null);
+  const underGlow = useRef<THREE.Mesh>(null);
   const mouthLight = useRef<THREE.PointLight>(null);
   const prizeLight = useRef<THREE.PointLight>(null);
+  const underLight = useRef<THREE.PointLight>(null);
+  const underSpot = useRef<THREE.SpotLight>(null);
   const open = useRef(0);
 
   const target = OPEN_STAGES.includes(stage) ? 1 : 0;
@@ -186,8 +189,14 @@ function ChestScene({
       m.opacity = o * 0.3;
       beam.current.scale.set(0.6 + o * 0.4, 1, 0.6 + o * 0.4);
     }
+    if (underGlow.current) {
+      const m = underGlow.current.material as THREE.MeshBasicMaterial;
+      m.opacity = 0.22 + o * 0.35;
+    }
     if (mouthLight.current) mouthLight.current.intensity = 0.3 + o * 9;
     if (prizeLight.current) prizeLight.current.intensity = o * 6;
+    if (underLight.current) underLight.current.intensity = 3.2 + o * 6;
+    if (underSpot.current) underSpot.current.intensity = 28 + o * 40;
     if (prize.current) {
       prize.current.position.y = 0.75 + o * 1.85 + Math.sin(t * 2) * 0.12 * o;
       prize.current.scale.setScalar(Math.max(0.001, o));
@@ -222,6 +231,31 @@ function ChestScene({
         intensity={60}
         color={style.glow}
         distance={20}
+      />
+      {/* ---- uplighting from below: warm pedestal glow + cool rim ---- */}
+      <pointLight
+        ref={underLight}
+        position={[0, -0.55, 2.6]}
+        intensity={3.2}
+        color={style.glow}
+        distance={11}
+        decay={2}
+      />
+      <pointLight
+        position={[-2.6, -0.35, -2.1]}
+        intensity={4}
+        color="#5f74ff"
+        distance={9}
+        decay={2}
+      />
+      <spotLight
+        ref={underSpot}
+        position={[0, -0.92, 0.7]}
+        angle={0.65}
+        penumbra={1}
+        intensity={28}
+        color={style.glow}
+        distance={12}
       />
 
       <group ref={chest} position={[0, 0.15, 0]}>
@@ -396,6 +430,17 @@ function ChestScene({
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.94, 0]}>
         <ringGeometry args={[2.95, 3.02, 64]} />
         <meshBasicMaterial color={style.trim} transparent opacity={0.4} side={THREE.DoubleSide} />
+      </mesh>
+      {/* soft bounce-light pool on the floor to ground the uplight */}
+      <mesh ref={underGlow} rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.93, 0]}>
+        <circleGeometry args={[2.25, 48]} />
+        <meshBasicMaterial
+          color={accent}
+          transparent
+          opacity={0.22}
+          blending={THREE.AdditiveBlending}
+          depthWrite={false}
+        />
       </mesh>
       <ContactShadows position={[0, -0.93, 0]} opacity={0.72} scale={11} blur={2.4} far={4} color="#000000" />
     </>

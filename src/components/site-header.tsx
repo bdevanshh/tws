@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +26,15 @@ export function SiteHeader() {
     <header className="fixed top-0 right-0 left-0 z-50 bg-surface-container-lowest/95 backdrop-blur-md">
       <div className="mx-auto flex h-20 w-full max-w-[1280px] items-center justify-between px-gutter">
         <Link href="/" className="group flex items-center gap-space-sm text-left">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-burnished/50 bg-surface-vault shadow-[0_0_12px_rgba(212,175,55,0.2)] transition-all group-hover:border-gold-radiant group-hover:shadow-[0_0_20px_rgba(212,175,55,0.45)]">
-            <span className="material-symbols-outlined text-[22px] text-gold-radiant">
-              auto_awesome
-            </span>
+          <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-gold-burnished/50 bg-surface-vault shadow-[0_0_12px_rgba(212,175,55,0.2)] transition-all group-hover:border-gold-radiant group-hover:shadow-[0_0_20px_rgba(212,175,55,0.45)]">
+            <Image
+              src="/logo.jpeg"
+              alt="The Wish Society logo"
+              width={40}
+              height={40}
+              className="h-full w-full object-cover"
+              priority
+            />
           </div>
           <div className="flex flex-col">
             <span className="font-headline-sm text-headline-sm font-bold tracking-wider text-gold-radiant uppercase leading-tight">

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Maximize, Minimize } from "lucide-react";
 import { generateBox } from "@/lib/engine";
 import { charOf, engineInput, useStore } from "@/lib/store";
 import type { Rarity, SealedBox, TierId } from "@/lib/types";
@@ -63,6 +64,8 @@ export default function UnboxPage() {
   const [suspense, setSuspense] = useState<string | null>(null);
   const boxRef = useRef<SealedBox | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stageRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(
     () => () => {
@@ -70,6 +73,20 @@ export default function UnboxPage() {
     },
     []
   );
+
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+      return;
+    }
+    void stageRef.current?.requestFullscreen?.().catch(() => {});
+  }, []);
 
   const later = (ms: number, fn: () => void) => {
     if (timer.current) clearTimeout(timer.current);
@@ -195,144 +212,180 @@ export default function UnboxPage() {
         </div>
       </section>
 
-      {/* Main Ritual Interactive Chamber */}
-      <section className="mx-auto w-full max-w-[1280px] px-gutter pb-16">
-        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
-          {/* Centerpiece Reliquary Vessel Stage */}
-          <div className="flex flex-col gap-6 lg:col-span-7">
-            <div className="relative flex flex-col overflow-hidden rounded-xl bg-surface-midnight p-6 shadow-2xl md:p-8">
-              {/* Atmospheric Header / Status Bar */}
-              <div className="mb-6 flex items-center justify-between border-b border-surface-container-high/40 pb-6">
-                <div className="flex items-center gap-3">
-                  <span className="material-symbols-outlined text-gold-burnished">lock_clock</span>
-                  <div className="flex flex-col">
-                    <span className="font-label-sm text-label-sm tracking-widest text-outline uppercase">
-                      Seal Integrity
-                    </span>
-                    <span className="font-headline-sm text-headline-sm font-semibold text-parchment-text">
-                      2 Iron Padlocks — {lockCount} of 2 picked
-                    </span>
-                  </div>
-                </div>
-                <div className="hidden items-center gap-2 rounded-full bg-surface-container-high px-3 py-1.5 sm:flex">
-                  <span className="material-symbols-outlined text-sm text-gold-radiant">
-                    visibility
-                  </span>
-                  <span className="font-label-sm text-label-sm tracking-wider text-gold-radiant uppercase">
-                    Demo Chamber
-                  </span>
-                </div>
-              </div>
+      {/* Fullscreen Ritual Chamber */}
+      <div
+        ref={stageRef}
+        className={cn(
+          "relative left-1/2 w-screen max-w-none -translate-x-1/2 overflow-hidden bg-[#0d0b13]",
+          isFullscreen ? "h-screen" : "h-[calc(100svh-5rem)] min-h-[640px]"
+        )}
+      >
+        {/* Interactive 3D Chest Stage (Three.js) — fills the chamber */}
+        <div className="absolute inset-0">
+          <Chest3D
+            stage={stage}
+            locks={locks}
+            tier={tier}
+            rarity={unveiled ? topRarity : "legendary"}
+            prizeEmoji={char?.emoji ?? null}
+            onPickLock={toggleLock}
+            onOpen={breakSealAndUnveil}
+          />
+        </div>
+        <div className="pointer-events-none absolute inset-0 ring-1 ring-gold-radiant/20 ring-inset" />
+        {/* cinematic vignettes */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/70 to-transparent" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-              {/* Interactive 3D Chest Stage (Three.js) */}
-              <div className="relative aspect-[4/3] max-h-[480px] w-full overflow-hidden rounded-lg border border-gold-burnished/30 bg-surface-container-lowest shadow-inner">
-                <div className="absolute inset-0">
-                  <Chest3D
-                    stage={stage}
-                    locks={locks}
-                    tier={tier}
-                    rarity={unveiled ? topRarity : "legendary"}
-                    prizeEmoji={char?.emoji ?? null}
-                    onPickLock={toggleLock}
-                    onOpen={breakSealAndUnveil}
-                  />
-                </div>
-                <div className="pointer-events-none absolute inset-0 rounded-lg ring-1 ring-gold-radiant/20 ring-inset" />
-              </div>
-
-              {/* Veil Status Banner */}
-              <div className="mt-4 flex items-center justify-between rounded bg-surface-container-lowest p-3">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "h-2.5 w-2.5 rounded-full",
-                      unveiled ? "bg-gold-radiant" : "animate-ping bg-error"
-                    )}
-                  />
-                  <span className="font-label-md text-label-md tracking-wider text-parchment-text uppercase">
-                    Veil Status:
-                  </span>
-                  <span
-                    className={cn(
-                      "font-body-md text-body-md italic",
-                      unveiled ? "text-gold-radiant" : "text-parchment-muted"
-                    )}
-                  >
-                    {veilText}
-                  </span>
-                </div>
-                <span className="font-label-sm text-label-sm hidden tracking-widest text-outline uppercase md:inline">
-                  Tier: {db.tiers[tier].name}
+        {/* Top HUD */}
+        <div className="pointer-events-none absolute inset-x-0 top-0">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-wrap items-center justify-between gap-3 px-gutter pt-5">
+            <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-gold-burnished/30 bg-black/55 py-1.5 pr-4 pl-1.5 backdrop-blur-md">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-vault">
+                <span className="material-symbols-outlined text-gold-burnished">lock_clock</span>
+              </span>
+              <div className="flex flex-col leading-tight">
+                <span className="font-label-sm text-[10px] tracking-widest text-outline uppercase">
+                  Seal Integrity
+                </span>
+                <span className="font-headline-sm text-sm font-semibold text-parchment-text">
+                  {lockCount} of 2 picked
                 </span>
               </div>
-
-              {/* Lock Manipulation Actions */}
-              <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
-                {([0, 1] as const).map((i) => (
-                  <button
-                    key={i}
-                    onClick={() => toggleLock(i)}
-                    disabled={locks[i] || unveiled || unveiling}
-                    className="font-label-md text-label-md flex items-center justify-center gap-2 rounded-lg bg-surface-vault px-4 py-3 tracking-wider text-parchment-text uppercase transition-all hover:text-gold-radiant disabled:opacity-60"
-                  >
-                    <span className="material-symbols-outlined text-gold-radiant">key</span>
-                    <span>{locks[i] ? `Lock ${i + 1} Picked (Secure)` : `Pick Iron Lock ${i + 1}`}</span>
-                  </button>
-                ))}
-              </div>
-
-              {/* Big Unveil CTA */}
+            </div>
+            <div className="pointer-events-auto hidden items-center gap-1 rounded-full border border-gold-burnished/30 bg-black/55 p-1 backdrop-blur-md md:inline-flex">
+              {TIERS.map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => fullReset(t.id)}
+                  className={cn(
+                    "font-label-sm rounded-full px-4 py-1.5 text-[11px] tracking-wider uppercase transition-all",
+                    tier === t.id
+                      ? "bg-surface-vault font-bold text-gold-radiant"
+                      : "text-parchment-muted hover:text-gold-radiant"
+                  )}
+                >
+                  {t.vessel}
+                </button>
+              ))}
+            </div>
+            <div className="pointer-events-auto flex items-center gap-2">
+              <span className="font-label-sm hidden items-center gap-2 rounded-full bg-black/55 px-3 py-2 text-[10px] tracking-wider text-gold-radiant uppercase backdrop-blur-md sm:inline-flex">
+                <span className="material-symbols-outlined text-sm">visibility</span>
+                Demo Chamber
+              </span>
               <button
-                onClick={breakSealAndUnveil}
-                disabled={!locks.every(Boolean) || unveiled || unveiling}
-                className={cn(
-                  "font-label-lg text-label-lg mt-4 flex w-full items-center justify-center gap-2 rounded-lg py-4 tracking-widest uppercase transition-all duration-300",
-                  unveiled || (locks.every(Boolean) && !unveiling)
-                    ? "bg-gradient-to-b from-primary-container to-gold-burnished text-on-primary shadow-[0_4px_20px_rgba(212,175,55,0.35)] hover:brightness-110"
-                    : "cursor-not-allowed bg-surface-container-high text-outline"
-                )}
+                onClick={toggleFullscreen}
+                type="button"
+                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gold-burnished/40 bg-black/55 text-gold-radiant backdrop-blur-md transition-all hover:bg-gold-burnished hover:text-on-primary"
               >
-                <span className="material-symbols-outlined text-xl">
-                  {locks.every(Boolean) && !unveiling && !unveiled ? "auto_awesome" : "lock"}
-                </span>
-                <span>
-                  {unveiled
-                    ? "Vault Open — Fate Revealed"
-                    : unveiling
-                      ? "The Seal Is Breaking…"
-                      : locks.every(Boolean)
-                        ? "Break Seal & Unveil Artifacts"
-                        : `Pick Both Locks (${lockCount}/2 Open)`}
-                </span>
+                {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
               </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom HUD — veil status + ritual actions */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-12">
+          <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-3 px-4">
+            <div className="pointer-events-auto flex w-full items-center justify-between gap-2 rounded-full border border-gold-burnished/25 bg-black/60 px-4 py-2 backdrop-blur-md">
+              <div className="flex min-w-0 items-center gap-2">
+                <span
+                  className={cn(
+                    "h-2.5 w-2.5 shrink-0 rounded-full",
+                    unveiled ? "bg-gold-radiant" : "animate-ping bg-error"
+                  )}
+                />
+                <span className="font-body-md truncate text-sm italic text-parchment-muted">
+                  {veilText}
+                </span>
+              </div>
+              <span className="font-label-sm hidden shrink-0 tracking-widest text-outline uppercase md:inline">
+                {db.tiers[tier].name}
+              </span>
+            </div>
+            <div className="pointer-events-auto grid w-full grid-cols-2 gap-2">
+              {([0, 1] as const).map((i) => (
+                <button
+                  key={i}
+                  onClick={() => toggleLock(i)}
+                  disabled={locks[i] || unveiled || unveiling}
+                  className="font-label-md flex items-center justify-center gap-2 rounded-lg border border-gold-burnished/30 bg-black/60 px-4 py-3 text-sm tracking-wider text-parchment-text uppercase backdrop-blur-md transition-all hover:text-gold-radiant disabled:opacity-60"
+                >
+                  <span className="material-symbols-outlined text-gold-radiant">key</span>
+                  <span>{locks[i] ? `Lock ${i + 1} Picked` : `Pick Lock ${i + 1}`}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={breakSealAndUnveil}
+              disabled={!locks.every(Boolean) || unveiled || unveiling}
+              className={cn(
+                "font-label-lg pointer-events-auto flex w-full items-center justify-center gap-2 rounded-lg py-4 text-sm tracking-widest uppercase transition-all duration-300",
+                unveiled || (locks.every(Boolean) && !unveiling)
+                  ? "bg-gradient-to-b from-primary-container to-gold-burnished text-on-primary shadow-[0_4px_20px_rgba(212,175,55,0.35)] hover:brightness-110"
+                  : "cursor-not-allowed bg-black/60 text-outline backdrop-blur-md"
+              )}
+            >
+              <span className="material-symbols-outlined text-xl">
+                {locks.every(Boolean) && !unveiling && !unveiled ? "auto_awesome" : "lock"}
+              </span>
+              <span>
+                {unveiled
+                  ? "Vault Open — Fate Revealed"
+                  : unveiling
+                    ? "The Seal Is Breaking…"
+                    : locks.every(Boolean)
+                      ? "Break Seal & Unveil Artifacts"
+                      : `Pick Both Locks (${lockCount}/2 Open)`}
+              </span>
+            </button>
+            <div className="pointer-events-auto flex items-center gap-3">
               {unveiling && (
                 <button
                   onClick={revealAll}
-                  className="font-label-md text-label-md mt-2 w-full rounded-lg border border-gold-burnished/50 px-4 py-2 tracking-wider text-gold-radiant uppercase transition-all hover:bg-gold-burnished/10"
+                  className="font-label-md rounded-lg border border-gold-burnished/50 px-4 py-2 text-xs tracking-wider text-gold-radiant uppercase transition-all hover:bg-gold-burnished/10"
                 >
                   Reveal now →
                 </button>
               )}
-
-              {/* Reset Sandbox Control */}
-              <div className="mt-4 flex items-center justify-between text-outline">
-                <span className="font-label-sm text-label-sm tracking-wider uppercase">
-                  {db.tiers[tier].name} Vessel · {money(db.tiers[tier].price)} · 2 iron locks
-                </span>
-                <button
-                  onClick={() => fullReset(tier)}
-                  type="button"
-                  className="font-label-sm text-label-sm flex items-center gap-1 tracking-wider text-gold-burnished uppercase transition-colors hover:text-gold-radiant"
-                >
-                  <span className="material-symbols-outlined text-xs">restart_alt</span> Reset Vault
-                  Chamber
-                </button>
-              </div>
+              <button
+                onClick={() => fullReset(tier)}
+                type="button"
+                className="font-label-sm flex items-center gap-1 px-2 py-2 text-[11px] tracking-wider text-gold-burnished uppercase transition-colors hover:text-gold-radiant"
+              >
+                <span className="material-symbols-outlined text-xs">restart_alt</span> Reset Vault
+              </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* "Your Pull" Unveiling Pedestal & Live Drops */}
-          <div className="flex flex-col gap-6 lg:col-span-5">
+      {/* Results & live chamber feed */}
+      <section className="mx-auto w-full max-w-[1280px] px-gutter py-10">
+        <div className="mb-6 flex items-center justify-between rounded-xl border border-gold-burnished/25 bg-surface-midnight px-5 py-4 text-outline">
+          <span className="font-label-sm text-xs tracking-wider uppercase">
+            {db.tiers[tier].name} Vessel · {money(db.tiers[tier].price)} · 2 iron locks
+          </span>
+          <div className="inline-flex rounded-full bg-surface-container-lowest p-1 md:hidden">
+            {TIERS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => fullReset(t.id)}
+                className={cn(
+                  "font-label-sm rounded-full px-3 py-1.5 text-[10px] tracking-wider uppercase",
+                  tier === t.id ? "bg-surface-vault text-gold-radiant" : "text-parchment-muted"
+                )}
+              >
+                {t.id}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-12">
+          {/* "Your Pull" Unveiling Pedestal */}
+          <div className="flex flex-col gap-6 lg:col-span-7">
             <div className="flex flex-col rounded-xl bg-surface-midnight p-6 shadow-2xl md:p-8">
               <div className="mb-4 flex items-center justify-between border-b border-surface-container-high/40 pb-4">
                 <div className="flex items-center gap-2">
@@ -425,8 +478,10 @@ export default function UnboxPage() {
                 </div>
               </div>
             </div>
+          </div>
 
-            {/* Live Global Pulls Ticker Section */}
+          {/* Live Global Pulls Ticker Section */}
+          <div className="flex flex-col gap-6 lg:col-span-5">
             <div className="flex flex-col rounded-xl bg-surface-midnight p-6 shadow-xl">
               <div className="mb-3 flex items-center justify-between border-b border-surface-container-high/40 pb-3">
                 <div className="flex items-center gap-2">
