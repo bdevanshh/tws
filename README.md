@@ -1,36 +1,59 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# THE WISH SOCIETY — Next.js + shadcn Prototype
 
-## Getting Started
+> You Choose the Box. We Create the Mystery. You Discover the Story.
 
-First, run the development server:
+Hypedrop-style mystery-box experience for world religions, mythology & cultural stories.
+Built with **Next.js 16 (App Router)**, **Tailwind CSS v4**, **shadcn-style UI** (`src/components/ui`),
+**lucide-react** icons and **sonner** toasts. Data persists in `localStorage` (prototype store).
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev      # → http://localhost:3000
+npm run build    # production check (tsc + eslint clean)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Demo accounts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Role     | Email             | Password  |
+| -------- | ----------------- | --------- |
+| Customer | `customer@wish.com` | `wish123` |
+| Admin    | `admin@wish.com`    | `admin123` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Routes
 
-## Learn More
+| Route | What |
+|---|---|
+| `/` | Hero, tiers, how-it-works strip, universe + live drops |
+| `/boxes` | Regular / Medium / Premium with odds + fairness note |
+| `/unbox` | Free Hypedrop-style spinner (outcome sealed before the strip moves) |
+| `/how`, `/about` | Journey + brand story |
+| `/auth` | Login / register (shadcn Tabs) |
+| `/checkout/[tier]` | Mock payment. **Never asks for a wish** — by design |
+| `/account` | Orders + tracking stepper, Bookshelf, Collection, Wishes, Profile |
+| `/book/[orderId]` | 8-page digital Mystery Book incl. YOUR WISH writer + send-for-acceptance |
+| `/admin` | Vault: stats, orders, wish moderation, customers, characters, stories, catalog restock, rarity odds, reset |
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/            routes (all client-rendered over the local store)
+    book/[orderId]/ checkout/[tier]/
+  components/
+    ui/           shadcn primitives (button, card, badge, tabs, dialog, table…)
+    tier-card.tsx rarity-badge.tsx site-header.tsx site-footer.tsx providers.tsx
+  lib/
+    types.ts      Tier, Character, Story, CardItem, Product, Order, Wish…
+    data.ts       seed catalog (24 figures, 27 stories, cards, products)
+    engine.ts     Mystery Engine: character → story → cards/products → rarity +
+                  inventory rules → duplicate prevention → cultural grouping
+    store.tsx     StoreProvider + localStorage persistence + order/wish actions
+legacy-static/    the original zero-dependency static prototype (archived)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Mystery Engine guarantees (tested)
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Same tier → different combinations · wish card always inside · story linked to
+  character · premium tiers lift Legendary/Ultra odds.
